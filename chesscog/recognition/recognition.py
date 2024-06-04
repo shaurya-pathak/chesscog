@@ -135,6 +135,26 @@ class ChessRecognizer:
                     board.set_piece_at(square, piece)
             corners = corners / img_scale
             return board, corners
+        
+    def predict_occupancy(self, img: np.ndarray, turn: chess.Color = chess.WHITE) -> typing.Tuple[np.ndarray, np.ndarray]:
+        """Perform an inference of only occupancy.
+
+        Args:
+            img (np.ndarray): the input image (RGB)
+            turn (chess.Color, optional): the current player. Defaults to chess.WHITE.
+
+        Returns:
+            typing.Tuple[chess.Board, np.ndarray]: the predicted position on the board and the four corner points
+        """
+        with torch.no_grad():
+            img, img_scale = resize_image(self._corner_detection_cfg, img)
+            corners = find_corners(self._corner_detection_cfg, img)
+            occupancy = self._classify_occupancy(img, chess.WHITE, corners)
+            corners = corners / img_scale
+
+            
+            return occupancy, corners
+        
 
 
 class TimedChessRecognizer(ChessRecognizer):
